@@ -1,0 +1,8 @@
+/* Center the container horizontally */
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Adjust this to your desired height */
+}
+
