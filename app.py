@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from flask import Flask, request, render_template
 import pickle
 import numpy as np
-
+import sklearn
 
 def getDomain(url):
     if "//" in url:
