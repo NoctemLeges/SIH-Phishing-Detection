@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from flask import Flask, request, render_template
 import pickle
 import numpy as np
+import sklearn
 
 
 def getDomain(url):
@@ -27,20 +28,13 @@ def isIp(url):
     return result
 
 def isValid(url):
-   # w = whois.whois(getDomain(url))
-   # expiry_date = ""
-   # for line in w.text.split('\n'):
-   #     if "Registry Expiry Date" in line:
-   #         expiry_date = line.split(": ")[1]
-   #         expiry_date = expiry_date.split("T0")[0]
-   #         break
-   # return int(expiry_date > str(date.today()))
    domain_info = whois.whois(getDomain(url))
-   #print(domain_info)
    if isinstance(domain_info.expiration_date,list):
        expiry =  domain_info.expiration_date[0]
+   elif domain_info.expiration_date is None:
+        return 0
    else:
-    expiry = domain_info.expiration_date
+       expiry = domain_info.expiration_date
    current = datetime.now()
    if(current<expiry): return 1
    else: return 0
@@ -48,6 +42,8 @@ def isValid(url):
 def activeDuration(url):
     domain_info = whois.whois(url)
     start = domain_info.creation_date
+    if domain_info.creation_date is None:
+        return 0
     current = datetime.now()
     duration = current-start
     return duration.days
@@ -104,6 +100,15 @@ def FeatureExtraction(url):
     features.append(getSubdomains(url))
     return features
 
+urls = []
+with open("malicious_phish.txt","r",encoding='utf-8') as f:
+    lines = f.readlines()
+
+for line in lines:
+    urls.append(line.split(",")[0].strip()) 
+
+
+
 
 file = open("rf-200-10-4.pkl","rb")
 rf = pickle.load(file)
@@ -118,9 +123,9 @@ def index():
     if request.method == "POST":
         url = request.form["url"]
         obj = FeatureExtraction(url)
+        print(obj)
         x = np.array(obj).reshape(1,9) 
         y_pred = rf.predict(x)[0]
-        
         if y_pred == 1:
             result = "PHISHING"
         else:
