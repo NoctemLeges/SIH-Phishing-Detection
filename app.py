@@ -8,7 +8,6 @@ import pickle
 import numpy as np
 import sklearn
 
-
 def getDomain(url):
     if "//" in url:
         url = url.split("//")[1]
